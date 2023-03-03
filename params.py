@@ -1,3 +1,5 @@
+#Code to get response from site (URL) adrress and show one of the results
+
 import requests
 from random import choice
 
