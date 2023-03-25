@@ -7,3 +7,4 @@
                 return "Please only invoke with integers."
             return fn(*args, **kwargs)
         return inner
+    
