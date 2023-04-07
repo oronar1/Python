@@ -9,23 +9,26 @@ all_quotes = []
 base_url="https://quotes.toscrape.com/"
 url = "/page/1"
 
-while url:
-    response = requests.get(f"{base_url}{url}")
-    #print(f"Now scarping {base_url}{url}...")
-    page = BeautifulSoup(response.text,"html.parser")
-    quotes = page.find_all(class_="quote")
-    for quote in quotes:
-        all_quotes.append({
-            "text": quote.find(class_="text").get_text(), #appending a quote from site to dict
-            "author": quote.find(class_="author").get_text(),
-            "author_bio": quote.find("a")["href"]
-        })
-    next_btn=page.find(class_="next")
-    url=next_btn.find("a")["href"] if next_btn else None    #if no next button, stop the loop
-    sleep(2)
-    
-def start_game():    
-    quote = choice(all_quotes)
+def scrape_quotes():
+    all_quotes = []
+    while url:
+        response = requests.get(f"{base_url}{url}")
+        #print(f"Now scarping {base_url}{url}...")
+        page = BeautifulSoup(response.text,"html.parser")
+        quotes = page.find_all(class_="quote")
+        for quote in quotes:
+            all_quotes.append({
+                "text": quote.find(class_="text").get_text(), #appending a quote from site to dict
+                "author": quote.find(class_="author").get_text(),
+                "author_bio": quote.find("a")["href"]
+            })
+        next_btn=page.find(class_="next")
+        url=next_btn.find("a")["href"] if next_btn else None    #if no next button, stop the loop
+        sleep(2)
+    return all_quotes
+
+def start_game(quotes):    
+    quote = choice(quotes)
     remaining_guesses = 4
     print("Here's a quote: ")
     print(quote["text"])
@@ -57,10 +60,11 @@ def start_game():
     again = ''
     while again.lower() not in ('y', 'yes','n','no'):
         again = input("Would you like to play again (y/n)?")
-    if again.lower() is in ('yes','y'):
-        return start_game()
+    if again.lower() in ('yes','y'):
+        return start_game(quotes)
         #print("Ok you play again")
     else:
         print("Ok, Bye")
 
-start_game()
+quotes = scrape_quotes()
+start_game(quotes)
