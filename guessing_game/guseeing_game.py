@@ -5,12 +5,13 @@ from csv import writer
 from time import sleep
 from random import choice
 
-all_quotes = []
-base_url="https://quotes.toscrape.com/"
-url = "/page/1"
+
+BASE_URL="https://quotes.toscrape.com/"
+
 
 def scrape_quotes():
     all_quotes = []
+    url = "/page/1"
     while url:
         response = requests.get(f"{base_url}{url}")
         #print(f"Now scarping {base_url}{url}...")
@@ -26,7 +27,7 @@ def scrape_quotes():
         url=next_btn.find("a")["href"] if next_btn else None    #if no next button, stop the loop
         sleep(2)
     return all_quotes
-
+    
 def start_game(quotes):    
     quote = choice(quotes)
     remaining_guesses = 4
@@ -44,7 +45,7 @@ def start_game(quotes):
         
         remaining_guesses -= 1
         if remaining_guesses == 3:
-            res = requests.get(f"{base_url}{quote['author_bio']}")
+            res = requests.get(f"{BASE_URL}{quote['author_bio']}")
             soup = BeautifulSoup(res.text, "html.parser")
             birth_date = soup.find(class_="author-born-date").get_text()
             birth_place = soup.find(class_="author-born-location").get_text()
