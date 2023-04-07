@@ -21,12 +21,12 @@ while url:
         quote_text = quote.find(class_="text").get_text()
         author_quote=quote.find(class_="author").get_text()
         author_bio=quote.find("a")["href"]
+        csv_writer.writerow([quote_text,author_quote,author_bio])
         
         all_quotes.append({    
             "text": quote_text, #appending a quote from site to dict
             "author": author_quote,
             "author_bio": author_bio
-            csv_writer.writerow([quote_text,author_quote,author_bio])
         })
     next_btn=page.find(class_="next")
     url=next_btn.find("a")["href"] if next_btn else None    #if no next button, stop the loop
