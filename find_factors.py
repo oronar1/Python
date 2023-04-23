@@ -4,4 +4,4 @@ def find_factors(n):
         if n % i == 0:
             result.add[i]
             result.add[n//i]
-    return list(result)
+    return sorted(list(result))
