@@ -1,11 +1,13 @@
 from tkinter import *
 from tkinter import messagebox
 from random import choice, randint, shuffle
+import json
+
 import pyperclip
 
 WHITE = "#FFFFFF"
 FONT_NAME = "Courier"
-TEXT = "data.txt"
+DATA = "data.json"
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -20,34 +22,67 @@ def generate_pass():
     password_symbols = [choice(symbols) for _ in range(randint(2, 4))]
     password_numbers = [choice(numbers) for _ in range(randint(2, 4))]
 
-    password_list = password_letters+password_numbers+password_symbols
+    password_list = password_letters + password_numbers + password_symbols
     shuffle(password_list)
 
     password = "".join(password_list)
     password_entry.delete(0, END)
-    password_entry.insert(0,password)
+    password_entry.insert(0, password)
     pyperclip.copy(password)
-    #print(f"Your password is: {password}")
+    print(f"Your password is: {password}")
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
-def add_pass():
+def save_pass():
     website = website_entry.get()
     password = password_entry.get()
     email = email_entry.get()
+    new_data = {website: {
+        "email": email,
+        "password": password,
+    }
+    }
 
     if len(website) == 0 or len(password) == 0 or len(email) == 0:
         messagebox.showinfo(title="Oops", message="Please don't leave any fields empty!")
     else:
-        is_ok = messagebox.askokcancel(title=website, message=f"These are the details entered: \nEmail: {email} "
-                                                              f"\nPassword: {password} \nIs it ok to save?")
-        if is_ok:
-            with open(TEXT, "a") as dat_file:
-                dat_file.write(f"{website} | {email} | {password}\n")
-                website_entry.delete(0, END)
-                password_entry.delete(0, END)
-                email_entry.delete(0, END)
-                email_entry.insert(0, "email@email.com")
+        try:
+            with open(DATA, "r") as dat_file:
+                # reading old data
+                data = json.load(dat_file)
+        except FileNotFoundError:
+            with open(DATA, "w") as dat_file:
+                json.dump(new_data, dat_file, indent=4)
+                # data = json.load(dat_file)
+        else:
+            # Update the data
+            data.update(new_data)
+
+            with open(DATA, "w") as data_file:
+                # saving updates data
+                json.dump(data, data_file, indent=4)
+        finally:
+            website_entry.delete(0, END)
+            password_entry.delete(0, END)
+            email_entry.delete(0, END)
+            email_entry.insert(0, "email@email.com")
+
+
+# ----------------------------Search website--------------------------- #
+def find_password():
+    website = website_entry.get()
+    try:
+        with open(DATA, "r") as data_file:
+            data = json.load(data_file)
+    except FileNotFoundError:
+        messagebox.showinfo(title="Error", message="No Data File Found!")
+    else:
+        if website in data:
+            email = data[website]['email']
+            password = data[website]['password']
+            messagebox.showinfo(title=website, message=f"Email: {email}\nPassword: {password}")
+        else:
+            messagebox.showinfo(title="Error", message=f"No details for {website}")
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -68,18 +103,16 @@ website_lbl.grid(column=0, row=1)
 email_lbl.grid(column=0, row=2)
 password_lbl.grid(column=0, row=3)
 
-# check_marks=Label(bg=YELLOW,fg=GREEN)
-# check_marks.config(padx=10,pady=20)
-# check_marks.grid(column=2,row=3)
-
 generate_bt = Button(text="Generate Password", command=generate_pass, width=14, bg=WHITE, highlightthickness=0)
-add_bt = Button(text="Add", command=add_pass, width=43, bg=WHITE, highlightthickness=0)
+add_bt = Button(text="Add", command=save_pass, width=43, bg=WHITE, highlightthickness=0)
 generate_bt.grid(column=2, row=3)
 add_bt.grid(column=1, row=4, columnspan=2)
+search_bt = Button(text="Search", command=find_password, width=14, bg=WHITE, highlightthickness=0)
+search_bt.grid(column=2, row=1)
 
 # Entry
-website_entry = Entry(width=50)
-website_entry.grid(column=1, row=1, columnspan=2)
+website_entry = Entry(width=32)
+website_entry.grid(column=1, row=1, columnspan=1)
 website_entry.focus()
 email_entry = Entry(width=50)
 email_entry.grid(column=1, row=2, columnspan=2)
